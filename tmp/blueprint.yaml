@@ -1,7 +1,7 @@
 name: Simple Mule blueprint
 location: localhost
 services:
-- type: io.brooklyn.mule.VanillaSoftwareProcessWithJmx
+- type: io.brooklyn.tmpsensor.VanillaSoftwareProcessWithJmx
   id: myself
   name: Simple Mule blueprint
   install.dir: ~/mule-home
