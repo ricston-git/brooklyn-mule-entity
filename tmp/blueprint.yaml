@@ -1,0 +1,32 @@
+name: Simple Mule blueprint
+location: localhost
+services:
+- type: io.brooklyn.mule.VanillaSoftwareProcessWithJmx
+  id: myself
+  name: Simple Mule blueprint
+  install.dir: ~/mule-home
+  run.dir: ~/mule-home
+  period: 5000ms
+  brooklyn.config:
+    jmx.service.url: service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi
+
+  brooklyn.initializers:
+  - type: brooklyn.entity.software.java.JmxAttributeSensor
+    brooklyn.config:
+      name: heapmemoryusage
+      objectName: java.lang:type=Memory
+      attribute: HeapMemoryUsage
+      period: 10000ms
+      targetType: javax.management.openmbean.CompositeDataSupport
+
+  launch.command: |
+    if [ ! -d mule-standalone-3.6.1 ]
+      then
+        curl https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/3.6.1/mule-standalone-3.6.1.tar.gz >> mule-standalone-3.6.1.tar.gz
+        tar -zxvf mule-standalone-3.6.1.tar.gz
+    fi
+    cd mule-standalone-3.6.1
+    nohup ./bin/mule -M-Dcom.sun.management.jmxremote=true -M-Dcom.sun.management.jmxremote.port=1098 -M-Dcom.sun.management.jmxremote.authenticate=false -M-Dcom.sun.management.jmxremote.ssl=false >> console.log 2>&1 </dev/null &
+
+  checkRunning.command: cd mule-standalone-3.6.1 && ./bin/mule status
+  stop.command: cd mule-standalone-3.6.1 && ./bin/mule stop
