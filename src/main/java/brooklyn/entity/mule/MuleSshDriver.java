@@ -103,7 +103,8 @@ public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
     @Override
     public boolean isRunning() {
     	int res = newScript(MutableMap.of(USE_PID_FILE, false), CHECK_RUNNING)
-    		.body.append(format("cd mule-standalone-3.6.1 && ./bin/mule status")).execute(); // == 0;
+//    		.body.append(format("cd mule-standalone-3.6.1 && ./bin/mule status")).execute(); // == 0;
+    		.body.append(format("mule-standalone-3.6.1/bin/mule status")).execute(); // == 0;
     	System.out.println("isRunning(), result of script is: " + res);
     	return res == 0;
     }
@@ -111,12 +112,13 @@ public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
     @Override
     public void stop() {
     	newScript(MutableMap.of(USE_PID_FILE, false), STOPPING)
-    		.body.append(format("cd mule-standalone-3.6.1 && ./bin/mule stop")).execute();
+    		.body.append(format("mule-standalone-3.6.1/bin/mule stop")).execute();
+//    		.body.append(format("cd mule-standalone-3.6.1 && ./bin/mule stop")).execute();
     }
 
     @Override
     protected String getLogFileLocation() {
-        return Os.mergePathsUnix(getRunDir(), "logs/mule.log");
+        return Os.mergePathsUnix(getRunDir(), "mule-standalone-3.6.1/logs/mule.log");
     }
 
     @Override
