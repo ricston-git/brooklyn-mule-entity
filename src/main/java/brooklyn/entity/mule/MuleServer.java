@@ -26,8 +26,7 @@ public interface MuleServer extends JavaWebAppSoftwareProcess, UsesJmx, HasShort
 	@SetFromFlag("downloadUrl")
 	BasicAttributeSensorAndConfigKey<String> DOWNLOAD_URL = new BasicAttributeSensorAndConfigKey<String>(
 			SoftwareProcess.DOWNLOAD_URL,
-			"https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/3.6.1/mule-standalone-3.6.1.tar.gz");
-//			"https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/${version}/mule-standalone-${version}.tar.gz");
+			"https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/${version}/mule-standalone-${version}.tar.gz");
 
 	AttributeSensor<String> JMX_SERVICE_URL = UsesJmx.JMX_URL;
 

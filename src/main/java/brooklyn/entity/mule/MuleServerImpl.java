@@ -21,24 +21,16 @@ package brooklyn.entity.mule;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-
-import org.osgi.jmx.JmxConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import brooklyn.entity.java.JavaAppUtils;
 import brooklyn.entity.webapp.JavaWebAppSoftwareProcessImpl;
 import brooklyn.event.basic.BasicAttributeSensor;
 import brooklyn.event.feed.jmx.JmxAttributePollConfig;
 import brooklyn.event.feed.jmx.JmxFeed;
 import brooklyn.event.feed.jmx.JmxValueFunctions;
-import brooklyn.util.collections.MutableMap;
 
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Predicates;
 
 /**
  * An {@link brooklyn.entity.Entity} that represents a single Mule instance.
@@ -70,8 +62,7 @@ public class MuleServerImpl extends JavaWebAppSoftwareProcessImpl implements Mul
         					.build();
         } else {
             // if not using JMX
-            LOG.warn("Tomcat running without JMX monitoring; limited visibility of service available");
-//            connectServiceUpIsRunning();
+            LOG.warn("Mule running without JMX monitoring; limited visibility of service available");
         }
         connectServiceUpIsRunning();
     }
@@ -82,10 +73,7 @@ public class MuleServerImpl extends JavaWebAppSoftwareProcessImpl implements Mul
         if (getDriver() != null && getDriver().isJmxEnabled()) {
            if (jmxHeapMemory != null) jmxHeapMemory.stop();
         }
-//        else {
-//            disconnectServiceUpIsRunning();
-//        }
-            disconnectServiceUpIsRunning();
+        disconnectServiceUpIsRunning();
     }
 
     @SuppressWarnings("rawtypes")

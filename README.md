@@ -19,3 +19,9 @@ Now you should be able to launch Brooklyn and get this project's built artifacts
 
 After Brooklyn starts, go to localhost:8081 (or some other port as indicated in stdout), and add the YAML deployment descriptor found in tmp/blueprint.yaml
 
+---
+
+Notes:
+  * If you want to have Brooklyn download Mule again in the install, you need to make sure you delete the file BROOKLYN in install.dir.
+    * There is this test in the install script generated: test -f BROOKLYN && exit 0
+

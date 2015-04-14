@@ -1,2 +1,3 @@
 src/main/java/brooklyn/entity/webapp/tomcat
 tmp/*-tmp.yaml
+tmp*

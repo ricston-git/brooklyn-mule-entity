@@ -2,11 +2,10 @@ name: Simple Mule blueprint
 location: localhost
 services:
 - type: brooklyn.entity.mule.MuleServer
-  id: myself
   name: Simple Mule blueprint
   version: 3.6.1
   install.dir: ~/mule-home
-  run.dir: ~/mule-home
+  run.dir: ~/mule-home/mule-standalone-3.6.1
   period: 5000ms
   brooklyn.config:
     jmx.service.url: service:jmx:rmi:///jndi/rmi://localhost:1098/jmxrmi
