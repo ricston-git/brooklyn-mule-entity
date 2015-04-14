@@ -27,11 +27,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import brooklyn.entity.basic.Entities;
+import brooklyn.entity.webapp.JavaWebAppSoftwareProcess;
 import brooklyn.entity.webapp.JavaWebAppSshDriver;
 import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.util.collections.MutableMap;
 import brooklyn.util.os.Os;
 import brooklyn.util.ssh.BashCommands;
+
+import com.google.common.collect.ImmutableList;
 
 public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
 
@@ -69,26 +72,6 @@ public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
     public void customize() {
     	// deploy initial apps?
     	LOG.info("in customize - nothing to do");
-
-    	/* 
-        newScript(CUSTOMIZING)
-                .body.append("mkdir -p conf logs webapps temp")
-                .failOnNonZeroResultCode()
-                .execute();
-
-        copyTemplate(entity.getConfig(TomcatServer.SERVER_XML_RESOURCE), Os.mergePaths(getRunDir(), "conf", "server.xml"));
-        copyTemplate(entity.getConfig(TomcatServer.WEB_XML_RESOURCE), Os.mergePaths(getRunDir(), "conf", "web.xml"));
-
-        // Deduplicate same code in JBoss
-        if (isProtocolEnabled("HTTPS")) {
-            String keystoreUrl = Preconditions.checkNotNull(getSslKeystoreUrl(), "keystore URL must be specified if using HTTPS for " + entity);
-            String destinationSslKeystoreFile = getHttpsSslKeystoreFile();
-            InputStream keystoreStream = resource.getResourceFromUrl(keystoreUrl);
-            getMachine().copyTo(keystoreStream, destinationSslKeystoreFile);
-        }
-
-        getEntity().deployInitialWars();
-        */
     }
 
     @Override
@@ -121,6 +104,36 @@ public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
     @Override
     protected String getDeploySubdir() {
        return "apps";
+    }
+    
+    /**
+     * Deploys a URL as a Mule app at the Mule standalone server.
+     * 
+     * targetName is the name of the app copied over to $MULE_HOME/apps
+     *
+     * If deployment of targetName is successful, targetName is returned.
+     * This targetName can be used as an argument to undeploy.
+     * If deployment is unsuccessful, an empty String is returned.
+     *
+     * @see JavaWebAppSoftwareProcess#deploy(String, String) for details of how input filenames are handled
+     */
+    @Override
+    public String deploy(String url, String targetName) {
+    	String dest = String.format("%s/%s.zip", getDeployDir(), targetName);
+        int result = copyResource(url, dest);
+        log.debug("{} deployed {} to {}:{}: result {}", new Object[]{entity, url, getHostname(), dest, result});
+        if (result!=0) log.warn("Problem deploying {} to {}:{} for {}: result {}", new Object[]{url, getHostname(), dest, entity, result}); 
+    	return result == 0 ? targetName : "";
+    }
+    
+    @Override
+    public void undeploy(String targetName) {
+    	if ("".equals(targetName)) return;
+    	
+        String dest = String.format("%s/%s-anchor.txt", getDeployDir(), targetName);
+        log.info("{} undeploying {}:{}", new Object[]{entity, getHostname(), dest});
+        int result = getMachine().execCommands("removing anchor file on undeploy", ImmutableList.of(String.format("rm -f %s", dest)));
+        log.debug("{} undeployed {}:{}: result {}", new Object[]{entity, getHostname(), dest, result});
     }
 
 }
