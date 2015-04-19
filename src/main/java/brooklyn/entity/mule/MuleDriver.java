@@ -18,7 +18,12 @@
  */
 package brooklyn.entity.mule;
 
-import brooklyn.entity.webapp.JavaWebAppDriver;
+import brooklyn.entity.java.JavaSoftwareProcessDriver;
 
-public interface MuleDriver extends JavaWebAppDriver {
+public interface MuleDriver extends JavaSoftwareProcessDriver {
+
+    String deploy(String url, String targetName);
+    
+    void undeploy(String targetName);
+
 }

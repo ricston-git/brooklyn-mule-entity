@@ -27,8 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import brooklyn.entity.basic.Entities;
-import brooklyn.entity.webapp.JavaWebAppSoftwareProcess;
-import brooklyn.entity.webapp.JavaWebAppSshDriver;
+import brooklyn.entity.java.JavaSoftwareProcessSshDriver;
 import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.util.collections.MutableMap;
 import brooklyn.util.os.Os;
@@ -36,7 +35,7 @@ import brooklyn.util.ssh.BashCommands;
 
 import com.google.common.collect.ImmutableList;
 
-public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
+public class MuleSshDriver extends JavaSoftwareProcessSshDriver implements MuleDriver {
 
     private static final Logger LOG = LoggerFactory.getLogger(MuleSshDriver.class);
 
@@ -70,7 +69,6 @@ public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
 
     @Override
     public void customize() {
-    	// deploy initial apps?
     	LOG.info("in customize - nothing to do");
     }
 
@@ -101,39 +99,36 @@ public class MuleSshDriver extends JavaWebAppSshDriver implements MuleDriver {
         return Os.mergePathsUnix(getRunDir(), "logs/mule.log");
     }
 
-    @Override
-    protected String getDeploySubdir() {
-       return "apps";
+    protected String getDeployDir() {
+        return getRunDir() + "/apps";
     }
-    
-    /**
-     * Deploys a URL as a Mule app at the Mule standalone server.
-     * 
-     * targetName is the name of the app copied over to $MULE_HOME/apps
-     *
-     * If deployment of targetName is successful, targetName is returned.
-     * This targetName can be used as an argument to undeploy.
-     * If deployment is unsuccessful, an empty String is returned.
-     *
-     * @see JavaWebAppSoftwareProcess#deploy(String, String) for details of how input filenames are handled
-     */
+
     @Override
     public String deploy(String url, String targetName) {
     	String dest = String.format("%s/%s.zip", getDeployDir(), targetName);
         int result = copyResource(url, dest);
         log.debug("{} deployed {} to {}:{}: result {}", new Object[]{entity, url, getHostname(), dest, result});
-        if (result!=0) log.warn("Problem deploying {} to {}:{} for {}: result {}", new Object[]{url, getHostname(), dest, entity, result}); 
+        if (result != 0) {
+        	log.warn("Problem deploying {} to {}:{} for {}: result {}", new Object[]{url, getHostname(), dest, entity, result}); 
+        	throw new IllegalStateException(String.format("Failed to copy %s to %s", url, dest));
+        } else if (log.isDebugEnabled()) {
+        	log.debug("{} deployed {}:{}: result {}", new Object[]{entity, getHostname(), dest, result});
+        }
+
     	return result == 0 ? targetName : "";
     }
     
     @Override
     public void undeploy(String targetName) {
-    	if ("".equals(targetName)) return;
-    	
         String dest = String.format("%s/%s-anchor.txt", getDeployDir(), targetName);
         log.info("{} undeploying {}:{}", new Object[]{entity, getHostname(), dest});
-        int result = getMachine().execCommands("removing anchor file on undeploy", ImmutableList.of(String.format("rm -f %s", dest)));
-        log.debug("{} undeployed {}:{}: result {}", new Object[]{entity, getHostname(), dest, result});
+        int result = getMachine().execCommands("removing anchor file on undeploy", ImmutableList.of(String.format("rm %s", dest)));
+        if (result != 0) {
+        	log.warn("Problem undeploying {} from {}:{} for {}: result {}", new Object[]{targetName, getHostname(), dest, entity, result}); 
+        	throw new IllegalStateException("Failed to delete " + dest);
+        } else if (log.isDebugEnabled()) {
+        	log.debug("{} undeployed {}:{}: result {}", new Object[]{entity, getHostname(), dest, result});
+        }
     }
 
 }
