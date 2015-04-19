@@ -1,27 +1,73 @@
-# A sensor for Brooklyn - an example
+brooklyn-mule-entity
+===
 
-The idea is to build a Brooklyn sensor which makes use of JMX.
+This is a Brooklyn project, showing how to define an application
+which Brooklyn will deploy and manage.
 
-Either build this project and drop the jar file in ??? (look up where this was again)
+This sample project is intended to be customized to suit your purposes: but
+search for all lines containing the word "sample" to make sure all the
+references to this being a sample are removed!   
 
-Or, import Brooklyn in your IDE and set up the following run config:
+To build an assembly, simply run:
 
-![Brooklyn run config](imgs/Brooklyn-Run-Config.png)
-![Brooklyn run config args](imgs/Brooklyn-Run-Config-Arguments.png)
+    mvn clean assembly:assembly
 
-Then, import this project in your IDE and add it in your classpath in your run configuration:
+This creates a tarball with a full standalone application which can be installed in any *nix machine at:
+    target/brooklyn-mule-entity-0.1.0-SNAPSHOT-dist.tar.gz
 
-![Add Sensor Project](imgs/add-sensor-project.png)
+It also installs an unpacked version which you can run locally:
+ 
+     cd target/brooklyn-mule-entity-0.1.0-SNAPSHOT-dist/brooklyn-mule-entity-0.1.0-SNAPSHOT
+     ./start.sh launch
+ 
+For more information see the README (or `./start.sh help`) in that directory.
+On OS X and Linux, this application will deploy to localhost *if* you have key-based 
+password-less (and passphrase-less) ssh enabled.
 
-Now you should be able to launch Brooklyn and get this project's built artifacts on your classpath.
+To configure cloud and fixed-IP locations, see the README file in the built application directly.
+For more information you can run `./start.sh help`) in that directory.
 
----
 
-After Brooklyn starts, go to localhost:8081 (or some other port as indicated in stdout), and add the YAML deployment descriptor found in tmp/blueprint.yaml
+### Opening in an IDE
 
----
+To open this project in an IDE, you will need maven support enabled
+(e.g. with the relevant plugin).  You should then be able to develop
+it and run it as usual.  For more information on IDE support, visit:
 
-Notes:
-  * If you want to have Brooklyn download Mule again in the install, you need to make sure you delete the file BROOKLYN in install.dir.
-    * There is this test in the install script generated: test -f BROOKLYN && exit 0
+    https://brooklyn.incubator.apache.org/v/latest/dev/env/ide/
+
+
+### Customizing the Assembly
+
+The artifacts (directory and tar.gz by default) which get built into
+`target/` can be changed.  Simply edit the relevant files under
+`src/main/assembly`.
+
+You will likely wish to customize the `SampleMain` class as well as
+the `Sample*App` classes provided.  That is the intention!
+You will also likely want to update the `start.sh` script and
+the `README.*` files.
+
+To easily find the bits you should customize, do a:
+
+    grep -ri sample src/ *.*
+
+
+### More About Apache Brooklyn
+
+Apache Brooklyn is a code library and framework for managing applications in a 
+cloud-first dev-ops-y way.  It has been used to create this sample project 
+which shows how to define an application and entities for Brooklyn.
+
+This project can be extended for more complex topologies and more 
+interesting applications, and to develop the policies to scale or tune the 
+deployment depending on what the application needs.
+
+For more information consider:
+
+* Visiting the Apache Brooklyn home page at https://brooklyn.incubator.apache.org
+* Finding us on IRC #brooklyncentral or email (click "Community" at the site above) 
+* Forking the project at  http://github.com/apache/incubator-brooklyn/
+
+A sample Brooklyn project should specify its license.
 
