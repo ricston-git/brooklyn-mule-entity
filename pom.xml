@@ -30,15 +30,15 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com/justin-calleja/brooklyn-mule-entity</connection>
-		<developerConnection>scm:git:git@github.com:justin-calleja/brooklyn-mule-entity.git</developerConnection>
-		<url>https://github.com/justin-calleja/brooklyn-mule-entity</url>
+		<connection>scm:git:git://github.com/ricston-git/brooklyn-mule-entity</connection>
+		<developerConnection>scm:git:git@github.com:ricston-git/brooklyn-mule-entity.git</developerConnection>
+		<url>https://github.com/ricston-git/brooklyn-mule-entity</url>
 	</scm>
 
 	<parent>
 		<groupId>org.apache.brooklyn</groupId>
 		<artifactId>brooklyn-downstream-parent</artifactId>
-		<version>0.7.0-SNAPSHOT</version>  <!-- BROOKLYN_VERSION -->
+        <version>0.7.0-incubating</version>  <!-- BROOKLYN_VERSION -->
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
