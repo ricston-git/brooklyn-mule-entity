@@ -22,8 +22,8 @@ import brooklyn.entity.java.JavaSoftwareProcessDriver;
 
 public interface MuleDriver extends JavaSoftwareProcessDriver {
 
-    String deploy(String url, String targetName);
-    
-    void undeploy(String targetName);
+	String deploy(String url, String targetName);
+
+	void undeploy(String targetName);
 
 }

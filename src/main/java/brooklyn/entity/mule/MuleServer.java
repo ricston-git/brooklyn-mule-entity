@@ -24,33 +24,33 @@ import brooklyn.util.flags.SetFromFlag;
 public interface MuleServer extends SoftwareProcess, UsesJmx, HasShortName {
 
 	@SetFromFlag("version")
-	ConfigKey<String> SUGGESTED_VERSION = ConfigKeys.newConfigKeyWithDefault(
-			SoftwareProcess.SUGGESTED_VERSION, "3.6.1");
+	ConfigKey<String> SUGGESTED_VERSION = ConfigKeys
+			.newConfigKeyWithDefault(SoftwareProcess.SUGGESTED_VERSION, "3.6.1");
 
 	@SetFromFlag("downloadUrl")
 	BasicAttributeSensorAndConfigKey<String> DOWNLOAD_URL = new BasicAttributeSensorAndConfigKey<String>(
 			SoftwareProcess.DOWNLOAD_URL,
 			"https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/${version}/mule-standalone-${version}.tar.gz");
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static final AttributeSensor<Set<String>> DEPLOYED_APPS = new BasicAttributeSensor(
-            Set.class, "mule.deployedApps", "Names of apps that are currently in $MULE_HOME/apps");
-	
-    /**
-     * Deploys a URL as a Mule app at the Mule standalone server.
-     * 
-     * targetName is the name of the app copied over to $MULE_HOME/apps
-     *
-     * If deployment of targetName is successful, targetName is returned.
-     * This targetName can be used as an argument to undeploy.
-     * If deployment is unsuccessful, an empty String is returned.
-     * 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static final AttributeSensor<Set<String>> DEPLOYED_APPS = new BasicAttributeSensor(Set.class,
+			"mule.deployedApps", "Names of apps that are currently in $MULE_HOME/apps");
+
+	/**
+	 * Deploys a URL as a Mule app at the Mule standalone server.
+	 * 
+	 * targetName is the name of the app copied over to $MULE_HOME/apps
+	 *
+	 * If deployment of targetName is successful, targetName is returned. This
+	 * targetName can be used as an argument to undeploy. If deployment is
+	 * unsuccessful, an empty String is returned.
+	 * 
 	 * @param url
 	 *            where to get the zip file, as a URL, either classpath://xxx or
 	 *            file:///home/xxx or http(s)...
 	 * @param targetName
 	 *            the name to use when moving this zip file to $MULE_HOME/apps
-     */
+	 */
 	@Effector(description = "Deploys the given artifact, from a source URL, to a given deployment filename/context")
 	public void deploy(
 			@EffectorParam(name = "url", description = "URL of WAR file") String url,
