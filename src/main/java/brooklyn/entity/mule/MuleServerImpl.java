@@ -44,104 +44,111 @@ import com.google.common.collect.Sets;
  */
 public class MuleServerImpl extends SoftwareProcessImpl implements MuleServer {
 
-	private static final Logger LOG = LoggerFactory.getLogger(MuleServerImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MuleServerImpl.class);
 
-	private BasicAttributeSensor<Map> heapMemoryUsageAttrSensor = new BasicAttributeSensor<Map>(Map.class,
-			"heap.memory.usage.mapAttribute", "Heap memory usage map attribute");
+    private BasicAttributeSensor<Map> heapMemoryUsageAttrSensor = new BasicAttributeSensor<Map>(Map.class,
+            "heap.memory.usage.mapAttribute", "Heap memory usage map attribute");
 
-	public MuleServerImpl() {
-		super();
-	}
+    @Override
+    public void init() {
+        super.init();
+        setAttribute(
+                DOWNLOAD_URL,
+                "https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/${version}/mule-standalone-${version}.tar.gz");
+    }
 
-	public MuleDriver getDriver() {
-		return (MuleDriver) super.getDriver();
-	}
+    public MuleServerImpl() {
+        super();
+    }
 
-	private volatile JmxFeed jmxHeapMemoryUsageFeed;
+    public MuleDriver getDriver() {
+        return (MuleDriver) super.getDriver();
+    }
 
-	@Override
-	public void connectSensors() {
-		super.connectSensors();
-		// currently, JMX is always enabled
-		if (getDriver().isJmxEnabled()) {
+    private volatile JmxFeed jmxHeapMemoryUsageFeed;
 
-			jmxHeapMemoryUsageFeed = JmxFeed
-					.builder()
-					.entity(this)
-					.period(3000, TimeUnit.MILLISECONDS)
-					.pollAttribute(
-							new JmxAttributePollConfig<Map>(heapMemoryUsageAttrSensor)
-									.objectName("java.lang:type=Memory").attributeName("HeapMemoryUsage")
-									.onSuccess((Function) JmxValueFunctions.compositeDataToMap())).build();
-		} else {
-			LOG.warn("Mule running without JMX monitoring");
-		}
-		connectServiceUpIsRunning();
-	}
+    @Override
+    public void connectSensors() {
+        super.connectSensors();
+        // currently, JMX is always enabled
+        if (getDriver().isJmxEnabled()) {
 
-	@Override
-	public void disconnectSensors() {
-		super.disconnectSensors();
-		if (getDriver() != null && getDriver().isJmxEnabled()) {
-			if (jmxHeapMemoryUsageFeed != null)
-				jmxHeapMemoryUsageFeed.stop();
-		}
-		disconnectServiceUpIsRunning();
-	}
+            jmxHeapMemoryUsageFeed = JmxFeed
+                    .builder()
+                    .entity(this)
+                    .period(3000, TimeUnit.MILLISECONDS)
+                    .pollAttribute(
+                            new JmxAttributePollConfig<Map>(heapMemoryUsageAttrSensor).objectName("java.lang:type=Memory")
+                                    .attributeName("HeapMemoryUsage")
+                                    .onSuccess((Function) JmxValueFunctions.compositeDataToMap())).build();
+        } else {
+            LOG.warn("Mule running without JMX monitoring");
+        }
+        connectServiceUpIsRunning();
+    }
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Class getDriverInterface() {
-		return MuleDriver.class;
-	}
+    @Override
+    public void disconnectSensors() {
+        super.disconnectSensors();
+        if (getDriver() != null && getDriver().isJmxEnabled()) {
+            if (jmxHeapMemoryUsageFeed != null)
+                jmxHeapMemoryUsageFeed.stop();
+        }
+        disconnectServiceUpIsRunning();
+    }
 
-	@Override
-	public String getShortName() {
-		return "Mule";
-	}
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Class getDriverInterface() {
+        return MuleDriver.class;
+    }
 
-	@Override
-	@Effector(description = "Deploys the given packaged Mule app from a source URL. Uses targetName as app name in $MULE_HOME/apps")
-	public void deploy(
-			@EffectorParam(name = "url", description = "URL of packaged Mule app") String url,
-			@EffectorParam(name = "targetName", description = "Name to use for directory in $MULE_HOME/apps") String targetName) {
-		try {
-			checkNotNull(url, "url");
-			checkNotNull(targetName, "url");
-			MuleDriver driver = getDriver();
-			String deployedName = driver.deploy(url, targetName);
-			// Update attribute
-			Set<String> deployedApps = getAttribute(DEPLOYED_APPS);
-			if (deployedApps == null) {
-				deployedApps = Sets.newLinkedHashSet();
-			}
-			deployedApps.add(deployedName);
-			setAttribute(DEPLOYED_APPS, deployedApps);
-		} catch (RuntimeException e) {
-			// Log and propagate, so that log says which entity had problems...
-			LOG.warn("Error deploying '" + url + "' as " + targetName + " on " + toString() + "; rethrowing...", e);
-			throw Throwables.propagate(e);
-		}
-	}
+    @Override
+    public String getShortName() {
+        return "Mule";
+    }
 
-	@Override
-	@Effector(description = "Undeploys the given Mule app by name in $MULE_HOME/apps")
-	public void undeploy(
-			@EffectorParam(name = "targetName", description = "Name which identifies app to undeploy") String targetName) {
-		try {
-			MuleDriver driver = getDriver();
-			driver.undeploy(targetName);
-			// Update attribute
-			Set<String> deployedApps = getAttribute(DEPLOYED_APPS);
-			if (deployedApps == null) {
-				deployedApps = Sets.newLinkedHashSet();
-			}
-			deployedApps.remove(targetName);
-			setAttribute(DEPLOYED_APPS, deployedApps);
-		} catch (RuntimeException e) {
-			LOG.warn("Error undeploying '" + targetName + "' on " + toString() + "; rethrowing...", e);
-			throw Throwables.propagate(e);
-		}
-	}
+    @Override
+    @Effector(description = "Deploys the given packaged Mule app from a source URL. Uses targetName as app name in $MULE_HOME/apps")
+    public void deploy(@EffectorParam(name = "url", description = "URL of packaged Mule app") String url,
+            @EffectorParam(name = "targetName", description = "Name to use for directory in $MULE_HOME/apps") String targetName) {
+        try {
+            checkNotNull(url, "url");
+            checkNotNull(targetName, "url");
+            MuleDriver driver = getDriver();
+            String deployedName = driver.deploy(url, targetName);
+            // Update attribute
+            Set<String> deployedApps = getAttribute(DEPLOYED_APPS);
+            if (deployedApps == null) {
+                deployedApps = Sets.newLinkedHashSet();
+            }
+            deployedApps.add(deployedName);
+            setAttribute(DEPLOYED_APPS, deployedApps);
+        } catch (RuntimeException e) {
+            // Log and propagate, so that log says which entity had problems...
+            LOG.warn("Error deploying '" + url + "' as " + targetName + " on " + toString() + "; rethrowing...", e);
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    @Effector(description = "Undeploys the given Mule app by name in $MULE_HOME/apps")
+    public void undeploy(
+            @EffectorParam(name = "targetName", description = "Name which identifies app to undeploy") String targetName) {
+        try {
+            MuleDriver driver = getDriver();
+            driver.undeploy(targetName);
+            // Update attribute
+            Set<String> deployedApps = getAttribute(DEPLOYED_APPS);
+            if (deployedApps == null) {
+                deployedApps = Sets.newLinkedHashSet();
+            }
+            deployedApps.remove(targetName);
+            setAttribute(DEPLOYED_APPS, deployedApps);
+        } catch (RuntimeException e) {
+            LOG.warn("Error undeploying '" + targetName + "' on " + toString() + "; rethrowing...", e);
+            throw Throwables.propagate(e);
+        }
+    }
 
 }
